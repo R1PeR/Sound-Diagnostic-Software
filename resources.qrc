@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/run.png</file>
+        <file>icons/accessible_forward-24px.svg</file>
+        <file>icons/accessible-24px.svg</file>
+        <file>icons/rowing-24px.svg</file>
+        <file>icons/trending_up-24px.svg</file>
+        <file>icons/horizontal_split-24px.svg</file>
+        <file>icons/history-24px.svg</file>
+        <file>icons/filter_2-24px.svg</file>
+        <file>icons/square_foot-24px.svg</file>
+        <file>icons/folder_open-24px.svg</file>
+        <file>icons/save-24px.svg</file>
+    </qresource>
+</RCC>
