@@ -31,6 +31,12 @@ public:
     void showTimeWindow(QPainter &painter, QVector<double> &data);
     void getMousePosition(int x, int y);
     void fillSpect(int x, std::vector<double> arr);
+    double interpolate( double val, double y0, double x0, double y1, double x1 );
+    double base( double val );
+    double red( double val );
+    double green( double val );
+    double blue( double val );
+    QColor JetColor(float v,float vmin,float vmax);
     int gridNumX=10, gridNumY=10;
     int minValueX=0, maxValueX=100;
     int minValueY=-100, maxValueY=100;
@@ -38,6 +44,7 @@ public:
     double markerX=1, markerY=0;
     int dataSize;
     int graphPos = 0;
+    int maxSpect = 200;
     QImage spect;
 
     QColor backgroundColor=Qt::black;

@@ -12,8 +12,8 @@
 #include "thread.h"
 #include "chart.h"
 #include "Gist.h"
-#define DSIZE (128)
-#define DBUFOR (100)
+#define DSIZE (256)
+#define DBUFOR (8)
 #define DSIZE2 (DSIZE/2)
 #define AVGSIZE (64)
 #define WINDOW 4
@@ -26,10 +26,10 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     typedef struct  WAV_HEADER{
-        char                RIFF[4];        // RIFF Header      Magic header
+        unsigned char       RIFF[4];        // RIFF Header      Magic header
         unsigned long       ChunkSize;      // RIFF Chunk Size
-        char                WAVE[4];        // WAVE Header
-        char                fmt[4];         // FMT header
+        unsigned char       WAVE[4];        // WAVE Header
+        unsigned char       fmt[4];         // FMT header
         unsigned long       Subchunk1Size;  // Size of the fmt chunk
         unsigned short      AudioFormat;    // Audio format 1=PCM,6=mulaw,7=alaw, 257=IBM Mu-Law, 258=IBM A-Law, 259=ADPCM
         unsigned short      NumOfChan;      // Number of channels 1=Mono 2=Sterio
@@ -37,12 +37,12 @@ public:
         unsigned long       bytesPerSec;    // bytes per second
         unsigned short      blockAlign;     // 2=16-bit mono, 4=16-bit stereo
         unsigned short      bitsPerSample;  // Number of bits per sample
-        char                Subchunk2ID[4]; // "data"  string
+        unsigned char       Subchunk2ID[4]; // "data"  string
         unsigned long       Subchunk2Size;  // Sampled data length
 
     }wav_hdr;
     wav_hdr fileWav;
- ~MainWindow();
+    ~MainWindow();
 private slots:
  void externalThread_tick();
  void sendCommand();
@@ -53,6 +53,8 @@ private slots:
  void on_actionAverage_triggered();
  void on_actionOpenWAV_triggered();
 
+ void on_verticalSlider_valueChanged(int value);
+
 private:
  Ui::MainWindow *ui;
  void paintEvent(QPaintEvent *event);
@@ -62,7 +64,8 @@ private:
  QByteArray readdata;
  QByteArray data;
  unsigned int bitsPerSample;
- int16_t * dataPtr;
+ char * dataPtr8;
+ short * dataPtr16;
  QVector<double> timeData;
  QVector<double> meanData;
  QVector<double> avgData;

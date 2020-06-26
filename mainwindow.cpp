@@ -76,20 +76,32 @@ void MainWindow::externalThread_tick()
         for(int j=0; j<DSIZE2/4;j++){
             //if(position<DSIZE2*DBUFOR){
                 //printf("%d %f\n",position,(*dataPtr)/65535.0);
-                int16_t * sample = reinterpret_cast<int16_t *>((dataPtr + posData));
+                if(fileWav.bitsPerSample == 8){
+                    int8_t * sample8 = reinterpret_cast<int8_t *>(dataPtr8 + posData);
+                    //printf("%d\n",*sample8);
+                    timeData.append(((*sample8)/128.0));
+                    //printf("8 bitow\n");
+                }
+                else if(fileWav.bitsPerSample == 16){
+                    int16_t * sample16 = reinterpret_cast<int16_t *>(dataPtr16 + posData);
+                    //printf("%d\n",*sample16);
+                    timeData.append((*sample16)/32768.0);
+                    //printf("16 bitow\n");
+                }
                 //position++;
                 //if(position > DSIZE2*DBUFOR-1){
                 //    position = 0;
                 //}
 
 
-                timeData.append((*sample)/-32768.0);
+                //timeData.append((*sample)/-32768.0);
                 //timeData[position]=(*sample)/-32768.0;
                 //printf("%f ",timeData[position]);
                 posData++;
-                if(posData > (fileWav.Subchunk2Size/2)-1){
+                if(posData > (fileWav.Subchunk2Size)-1){
                     posData = 0;
                 }
+
                 //printf("%d, %d\n",posData,fileWav.Subchunk2Size);
             /*}else{
 
@@ -160,8 +172,7 @@ void MainWindow::on_actionOpen_triggered()
      QString FileName;
      FileName = QFileDialog::getOpenFileName(this, tr("Open File"),"/home", tr("Data (*.dat)"));
      QFile file(FileName);
-     if (!file.open(QIODevice::ReadOnly))
-     return;
+     if (!file.open(QIODevice::ReadOnly)) return;
      file.read(reinterpret_cast<char*>(timeData.data()), static_cast<uint>(timeData.size())*sizeof(double));
      file.close();
      ui->actionRun->setChecked(false);
@@ -173,17 +184,48 @@ void MainWindow::on_actionOpenWAV_triggered()
      QString FileName;
      FileName = QFileDialog::getOpenFileName(this, tr("Open File"),"/home", tr("WAV (*.wav)"));
      QFile file(FileName);
-     if (!file.open(QIODevice::ReadOnly))
-     return;
-     file.read(reinterpret_cast<char*>(&fileWav),sizeof(wav_hdr));
-     dataPtr = (short*)malloc(fileWav.Subchunk2Size);
-     file.seek(sizeof(wav_hdr));
-     file.read(reinterpret_cast<char*>(dataPtr),fileWav.Subchunk2Size);
-     file.close();
-     ui->actionRun->setEnabled(true);
-     ui->actionRun->setChecked(false);
-     ui->actionTrigger->setChecked(false);
-     repaint();
+     printf("%s\n",FileName.toStdString().c_str());
+     if (!file.open(QIODevice::ReadOnly)){
+         printf("Cos nie chce otworzyc\n");
+         return;
+     }
+     else
+     {
+         printf("Otworzono\n");
+         file.seek(0);
+         file.read(reinterpret_cast<char*>(&fileWav),sizeof(wav_hdr));
+         if(fileWav.bitsPerSample > 32) return;
+         dataPtr8 = (char*)malloc(fileWav.Subchunk2Size);
+         dataPtr16 = (short*)malloc(fileWav.Subchunk2Size);
+         file.seek(sizeof(wav_hdr));
+         if(fileWav.bitsPerSample == 8){
+             printf("8 bitow\n");
+             file.read(reinterpret_cast<char*>(dataPtr8),fileWav.Subchunk2Size);
+         }else if (fileWav.bitsPerSample == 16){
+             printf("16 bitow\n");
+             file.read(reinterpret_cast<char*>(dataPtr16),fileWav.Subchunk2Size);
+         }
+         printf("%s\n",fileWav.RIFF);
+         printf("%lu\n",fileWav.ChunkSize);
+         printf("%s\n",fileWav.WAVE);
+         printf("%s\n",fileWav.fmt);
+         printf("%lu\n",fileWav.Subchunk1Size);
+         printf("%d\n",fileWav.AudioFormat);
+         printf("%d\n",fileWav.NumOfChan);
+         printf("%lu\n",fileWav.SamplesPerSec);
+         printf("%lu\n",fileWav.bytesPerSec);
+         printf("%d\n",fileWav.blockAlign);
+         printf("%d\n",fileWav.bitsPerSample);
+         printf("%s\n",fileWav.Subchunk2ID);
+         printf("%lu\n",fileWav.Subchunk2Size);
+         file.close();
+         position2 = 0;
+         posData = 0;
+         ui->actionRun->setEnabled(true);
+         ui->actionRun->setChecked(false);
+         ui->actionTrigger->setChecked(false);
+         repaint();
+     }
 }
 void MainWindow::on_actionSave_triggered()
 {
@@ -209,4 +251,10 @@ void MainWindow::on_actionBar_triggered()
 void MainWindow::on_actionAverage_triggered()
 {
     repaint();
+}
+
+void MainWindow::on_verticalSlider_valueChanged(int value)
+{
+    ui->label->setText("Value:" + QString::number(value));
+    chart->maxSpect = value;
 }

@@ -280,11 +280,43 @@ void Chart::fillSpect(int x, std::vector<double> arr){
     for(unsigned int i = 0; i < arr.size();i++){
         //QColor(arr[i],255-arr[i],0);
         //if(arr[i]*255.0>0){
-        spect.setPixelColor(x,spect.height()-i-1,qRgb(arr[i]*255,0,0));
+        //printf("%f\n",arr[i]);
+        float color = (arr[i]/maxSpect)*2.0-1.0;
+        spect.setPixelColor(x,spect.height()-i-1,QColor::fromRgbF(red(color),green(color),blue(color)));
+        //spect.setPixelColor(x,spect.height()-i-1,JetColor(arr[i],0.0,10.0));
+        //printf("%d %d %d\n",spect.height(),i,spect.height()-i);
         //}else{
             //spect.setPixelColor(x,i,QColor(arr[i],255-arr[i],0));
         //}
     }
     repaint = true;
+}
+double Chart::interpolate( double val, double y0, double x0, double y1, double x1 ) {
+    return (val-x0)*(y1-y0)/(x1-x0) + y0;
+}
 
+double Chart::base( double val ) {
+    if ( val <= -0.75 ) return 0;
+    else if ( val <= -0.25 ) return interpolate( val, 0.0, -0.75, 1.0, -0.25 );
+    else if ( val <= 0.25 ) return 1.0;
+    else if ( val <= 0.75 ) return interpolate( val, 1.0, 0.25, 0.0, 0.75 );
+    else return 0.0;
+}
+
+double Chart::red( double gray ) {
+    return base( gray - 0.5 );
+}
+double Chart::green( double gray ) {
+    return base( gray );
+}
+double Chart::blue( double gray ) {
+    return base( gray + 0.5 );
+}
+QColor Chart::JetColor(float v,float vmin,float vmax){
+   int r=0, g=0, b=0;
+   float x = (v-vmin)/(vmax-vmin);
+   r = 255*qBound(-4*abs(x-0.75) + 1.5,0.0,1.0);
+   g = 255*qBound(-4*abs(x-0.50) + 1.5,0.0,1.0);
+   b = 255*qBound(-4*abs(x-0.25) + 1.5,0.0,1.0);
+   return QColor(r,g,b);
 }
